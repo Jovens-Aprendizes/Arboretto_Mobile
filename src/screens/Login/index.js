@@ -12,19 +12,19 @@ export default function Login() {
         <View style={styles.fieldLogin}>
             <Text style={styles.title}>CPF</Text>
             <TextInput 
-                style={styles.Input}
-                placeholder='   Digite seu CPF'
+                style={styles.input}
+                placeholder='Digite seu CPF'
                 keyboardType='numeric'
                 maxLength={11}
             />
             <Text style={styles.title}>Senha</Text>
             <TextInput
-                style={styles.Input}
-                placeholder='   Digite sua senha'
+                style={styles.input}
+                placeholder='Digite sua senha'
             />
             <TouchableHighlight 
             style={styles.button}
-            onPress={ () => navigation.navigate('SelectSpace')}
+            onPress={ () => navigation.navigate('Home')}
             >
                 <Text style={styles.textButton}>Entrar</Text>
             </TouchableHighlight>
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
         color: "#fff",
         textAlign: "left"
     },
-    Input: {
+    input: {
         backgroundColor: "#f4f7fb",
         borderRadius: 15,
         width: "100%",
@@ -102,6 +102,6 @@ const styles = StyleSheet.create({
         fontSize: 24,
         top: "10%",
         marginBottom: "8%",
-        
+        paddingLeft: 20
     }
 });
