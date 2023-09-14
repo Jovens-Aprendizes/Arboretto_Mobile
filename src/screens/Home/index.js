@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Text, TouchableHighlight, View, SafeAreaView, StyleSheet, Image } from 'react-native';
+import { Text, TouchableHighlight, SafeAreaView, StyleSheet} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 export default function Home() {

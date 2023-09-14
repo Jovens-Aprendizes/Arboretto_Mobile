@@ -8,7 +8,7 @@ export default function Login() {
   return (
     <SafeAreaView style={styles.container}>
         <Text style={styles.arboretto}>ARBORETTO</Text>
-
+        <Image style={[styles.logoImage]} resizeMode='contain' source={require('../../img/logo.png')}/>
         <View style={styles.fieldLogin}>
             <Text style={styles.title}>CPF</Text>
             <TextInput 
@@ -29,7 +29,7 @@ export default function Login() {
                 <Text style={styles.textButton}>Entrar</Text>
             </TouchableHighlight>
         </View>
-        <Image style={[styles.logoImage, styles.iconLayout]} resizeMode='contain' source={require('../../img/logo.png')}/>
+        
     </SafeAreaView>
   );
 }
@@ -76,7 +76,6 @@ const styles = StyleSheet.create({
     },
     button: {
         position: 'absolute',
-        borderRadius: 50,
         backgroundColor: "#46e98f",
         width: "100%",
         height: "15%",
