@@ -7,18 +7,21 @@ export default function Home() {
   const navigation = useNavigation();
   return(
     <SafeAreaView style={styles.container}>
+
         <TouchableHighlight 
         style={styles.button}
         onPress={ () => navigation.navigate('SelectSpace')}
         >
             <Text style={styles.textButton}>AGENDAR ESPAÇO</Text>
         </TouchableHighlight>
+
         <TouchableHighlight 
         style={styles.button}
         onPress={ () => navigation.navigate('Requests')}
         >
             <Text style={styles.textButton}>STATUS DE SOLICITAÇÕES</Text>
         </TouchableHighlight>
+        
     </SafeAreaView>
   );
 }  

@@ -26,6 +26,7 @@ export default function StackRoutes() {
             <Stack.Screen
                 name="SelectDate"
                 component={SelectDate}
+                options={{ headerTitle: 'SELECIONE A DATA', headerShown: true }}
             />
 
             <Stack.Screen
