@@ -19,7 +19,6 @@ export default function SelectSpace() {
                 style={styles.button}
                 onPress={ () => navigation.navigate('SelectDate', {paramKey: 'CHURRASQUEIRA 1'})}
                 >
-                    
                     <Text style={styles.textButton}>CHURRASQUEIRA 1</Text>
                 </TouchableHighlight>
             </View>
