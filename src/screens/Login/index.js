@@ -1,6 +1,9 @@
 import * as React from 'react';
 import { Text, TextInput, TouchableHighlight, View, SafeAreaView, StyleSheet, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Formik, Form } from 'formik';
+import Api from '../../services/api';
+import { LoginSchema } from './loginError';
 
 export default function Login() {
 
@@ -10,24 +13,44 @@ export default function Login() {
         <Text style={styles.arboretto}>ARBORETTO</Text>
         <Image style={[styles.logoImage]} resizeMode='contain' source={require('../../img/logo.png')}/>
         <View style={styles.fieldLogin}>
-            <Text style={styles.title}>CPF</Text>
-            <TextInput 
-                style={styles.input}
-                placeholder='Digite seu CPF'
-                keyboardType='numeric'
-                maxLength={11}
-            />
-            <Text style={styles.title}>Senha</Text>
-            <TextInput
-                style={styles.input}
-                placeholder='Digite sua senha'
-            />
+    
+            <Formik
+                initialValues={{ email: '' }}
+                onSubmit={values => console.log(values)}
+            >
+                {({ handleChange, handleBlur, handleSubmit, values }) => (
+                    <View>
+                        <Text style={styles.title}>CPF</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder='Digite seu CPF'
+                            onChangeText={handleChange('email')}
+                            onBlur={handleBlur('email')}
+                            value={values.cpf}
+                            keyboardType='numeric'
+                            maxLength={11}
+                        />
+                        <Text style={styles.title}>Senha</Text>
+                        <TextInput 
+                            style={styles.input}
+                            placeholder='Digite sua senha' 
+                            onChangeText={handleChange('email')}
+                            onBlur={handleBlur('email')}
+                            value={values.password}
+                            secureTextEntry={true}
+                            isPassword={true}
+                        />
+                    </View>
+                )}
+            </Formik>
+
             <TouchableHighlight 
             style={styles.button}
             onPress={ () => navigation.navigate('Home')}
             >
                 <Text style={styles.textButton}>Entrar</Text>
             </TouchableHighlight>
+
         </View>
         
     </SafeAreaView>
@@ -94,6 +117,16 @@ const styles = StyleSheet.create({
         textAlign: "left"
     },
     input: {
+        backgroundColor: "#f4f7fb",
+        borderRadius: 15,
+        width: "100%",
+        paddingVertical: 15,
+        fontSize: 24,
+        top: "10%",
+        marginBottom: "8%",
+        paddingLeft: 20
+    },
+    formikView:{
         backgroundColor: "#f4f7fb",
         borderRadius: 15,
         width: "100%",
