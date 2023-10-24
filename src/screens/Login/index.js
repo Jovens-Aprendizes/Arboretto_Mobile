@@ -2,15 +2,62 @@ import * as React from 'react';
 import { Text, TextInput, TouchableHighlight, View, SafeAreaView, StyleSheet, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Formik, Form } from 'formik';
-import Api from '../../services/api';
-import { LoginSchema } from './loginError';
-import { useLoginService } from '../../services/login.services';
+import axios from 'axios';
+import { encode } from 'base-64';
+import { Alert } from 'react-native';
+import * as Yup from 'yup';
+
 
 export default function Login() {
 
-  const loginService = useLoginService();  
   const navigation = useNavigation();
+
+  // SCHEMA DE VALIDAÇÃO
+  const SignupSchema = Yup.object().shape({
+    cpf: Yup.number().required('Campo obrigatório!').min(11, 'O CPF deve conter 11 dígitos.'),
+    password: Yup.string().required('Campo obrigatorio'),
+  });
+
+
+  // FUNÇÃO DE LOGIN
+  const signIn = async ({ cpf, senha }) => {
+
+    global.btoa = encode;
+    
+    const token = btoa(JSON.stringify({ cpf: cpf, senha: senha }));
   
+    try {
+      const response = await axios.post(
+        process.env.NEXT_PUBLIC_AUTH_URL || 'https://api-arboretto-production.up.railway.app/api-arboretto-dev/v1/usuario/login',
+        { token: token },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: '*/*',
+          },
+        }
+      );
+  
+      if (response.data.id) {
+        navigation.navigate('Home');
+        // setUser(response.data); 
+        // setCookie(undefined, 'arboretto-token', token, {
+        //   maxAge: 60 * 60 * 24 * 30, 
+        // });
+        
+      } else {
+        Alert.alert('Erro', 'Login inválido');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Erro ao fazer login. Por favor, tente novamente mais tarde.');
+    }
+  };
+  
+// FINAL DA FUNÇÃO DE LOGIN
+
+
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -20,38 +67,49 @@ export default function Login() {
     
             <Formik
                 initialValues={{ cpf: '', password: '' }}
+                
                 onSubmit={values => {
                     try {
-                        if(values.cpf === '12345678901' && values.password === '123456'){
-                            navigation.navigate('SelectSpace')
-                        } else throw new Error()
+                        
+                        signIn({ cpf: values.cpf, senha: values.password })
+                    
+                        console.log(values.cpf, values.password)
+
                     } catch(error) {
-                        setLoginError('Senha ou Email incorretos')
+                        console.log(error)
                     }
                 }}
+                validationSchema={SignupSchema}
             >
-                {({ handleChange, handleBlur, handleSubmit, values }) => (
+                {({ handleChange, handleSubmit, values, errors, touched }) => (
                     <View>
                         <Text style={styles.title}>CPF</Text>
                         <TextInput
                             style={styles.input}
                             placeholder='Digite seu CPF'
                             onChangeText={handleChange('cpf')}
-                            onBlur={handleBlur('cpf')}
                             value={values.cpf}
                             keyboardType='numeric'
                             maxLength={11}
+                            error={touched.cpf && errors.cpf ? errors.cpf : ''}
                         />
+                        <Text style={styles.erroFormulario}>{errors.cpf}</Text>
+                        
+
+
                         <Text style={styles.title}>Senha</Text>
                         <TextInput 
                             style={styles.input}
                             placeholder='Digite sua senha' 
                             onChangeText={handleChange('password')}
-                            onBlur={handleBlur('password')}
                             value={values.password}
                             secureTextEntry={true}
                             isPassword={true}
+                            error={touched.password && errors.password ? errors.password : ''}
                         />
+                        <Text style={styles.erroFormulario}>{errors.password}</Text>
+
+
                         <TouchableHighlight 
                             style={styles.button}
                             onPress={handleSubmit}
@@ -59,10 +117,8 @@ export default function Login() {
                             <Text style={styles.textButton}>Entrar</Text>
                         </TouchableHighlight>
                     </View>
-        
                 )}
             </Formik>
-
         </View>
         
     </SafeAreaView>
@@ -137,7 +193,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
         top: "10%",
         marginBottom: "8%",
-        paddingLeft: 20
+        paddingLeft: 20,
     },
     formikView:{
         backgroundColor: "#f4f7fb",
@@ -148,5 +204,11 @@ const styles = StyleSheet.create({
         top: "10%",
         marginBottom: "8%",
         paddingLeft: 20
+    },
+    erroFormulario:{
+        
+        color: 'red',
+        fontSize: 14,
+        paddingTop: "5%"
     }
 });
