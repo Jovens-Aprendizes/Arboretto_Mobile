@@ -1,62 +1,31 @@
 import * as React from 'react';
-import { Text, TextInput, TouchableHighlight, View, SafeAreaView, StyleSheet, Image } from 'react-native';
+import { useContext } from 'react';
+import { Text, TextInput, TouchableHighlight, View, SafeAreaView, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Formik, Form } from 'formik';
-import axios from 'axios';
-import { encode } from 'base-64';
+import { Formik } from 'formik';
 import { Alert } from 'react-native';
-import * as Yup from 'yup';
+import { signIn } from '../../services/api';
+import { CredentialContext } from '../../services/CredentialsContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 export default function Login() {
-
+  
   const navigation = useNavigation();
-
-  // SCHEMA DE VALIDAÇÃO
-  const SignupSchema = Yup.object().shape({
-    cpf: Yup.number().required('Campo obrigatório!').min(11, 'O CPF deve conter 11 dígitos.'),
-    password: Yup.string().required('Campo obrigatorio'),
-  });
+  const {storedCredentials, setStoredCredentials} = useContext(CredentialContext);
 
 
-  // FUNÇÃO DE LOGIN
-  const signIn = async ({ cpf, senha }) => {
-
-    global.btoa = encode;
-    
-    const token = btoa(JSON.stringify({ cpf: cpf, senha: senha }));
+  const persistLogin = (credentials, message, status) => {
+    AsyncStorage.setItem('ArborettoCredentials', JSON.stringify(credentials))
+    .then(() => {
+        setStoredCredentials(credentials);
+    })
+    .catch((error) => {
+        console.log(error)
+        Alert.alert('Erro', 'Ocorreu um erro, faça login novamente!')
+    })
+  }
   
-    try {
-      const response = await axios.post(
-        process.env.NEXT_PUBLIC_AUTH_URL || 'https://api-arboretto-production.up.railway.app/api-arboretto-dev/v1/usuario/login',
-        { token: token },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: '*/*',
-          },
-        }
-      );
-  
-      if (response.data.id) {
-        navigation.navigate('Home');
-        // setUser(response.data); 
-        // setCookie(undefined, 'arboretto-token', token, {
-        //   maxAge: 60 * 60 * 24 * 30, 
-        // });
-        
-      } else {
-        Alert.alert('Erro', 'Login inválido');
-      }
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Erro', 'Erro ao fazer login. Por favor, tente novamente mais tarde.');
-    }
-  };
-  
-// FINAL DA FUNÇÃO DE LOGIN
-
-
 
 
   return (
@@ -65,57 +34,74 @@ export default function Login() {
         <Image style={[styles.logoImage]} resizeMode='contain' source={require('../../img/logo.png')}/>
         <View style={styles.fieldLogin}>
     
+    
             <Formik
                 initialValues={{ cpf: '', password: '' }}
-                
-                onSubmit={values => {
-                    try {
-                        
-                        signIn({ cpf: values.cpf, senha: values.password })
-                    
-                        console.log(values.cpf, values.password)
+                onSubmit={(values, {setSubmitting}) => {
 
-                    } catch(error) {
-                        console.log(error)
+                    if (values.cpf == '' || values.password == ''){
+                        setSubmitting(false);
+                        Alert.alert('Erro', 'Login inválido');
+                    }else{
+                        try {
+                        
+                            signIn({ cpf: values.cpf, senha: values.password, setSubmitting, persistLogin })
+                            
+                            console.log(values.cpf, values.password)
+                            
+                        } catch(error) {
+                            console.log(error)
+                        }
                     }
                 }}
-                validationSchema={SignupSchema}
             >
-                {({ handleChange, handleSubmit, values, errors, touched }) => (
+                {({ handleChange, handleBlur, handleSubmit, isSubmitting, values, errors, touched, isValid }) => (
                     <View>
                         <Text style={styles.title}>CPF</Text>
                         <TextInput
+                            name='cpf'
                             style={styles.input}
                             placeholder='Digite seu CPF'
                             onChangeText={handleChange('cpf')}
+                            onBlur={handleBlur('cpf')}
                             value={values.cpf}
                             keyboardType='numeric'
                             maxLength={11}
-                            error={touched.cpf && errors.cpf ? errors.cpf : ''}
+                            error={touched.cpf && errors.cpf ? errors.cpf : null}
                         />
-                        <Text style={styles.erroFormulario}>{errors.cpf}</Text>
-                        
+                        {(errors.cpf && touched.cpf) &&
+                          <Text style={styles.erroFormulario}>{errors.cpf}</Text>
+                        }
 
 
                         <Text style={styles.title}>Senha</Text>
                         <TextInput 
+                            name='password'
                             style={styles.input}
                             placeholder='Digite sua senha' 
                             onChangeText={handleChange('password')}
+                            onBlur={handleBlur('password')}
                             value={values.password}
-                            secureTextEntry={true}
-                            isPassword={true}
-                            error={touched.password && errors.password ? errors.password : ''}
+                            secureTextEntry
+                            error={touched.password && errors.password ? errors.password: null}
                         />
-                        <Text style={styles.erroFormulario}>{errors.password}</Text>
+                        {(errors.password && touched.password) && <Text style={styles.erroFormulario}>{errors.password}</Text>}
 
-
-                        <TouchableHighlight 
+                        {!isSubmitting && <TouchableHighlight 
                             style={styles.button}
                             onPress={handleSubmit}
+                            disabled={!isValid}
                         >
                             <Text style={styles.textButton}>Entrar</Text>
-                        </TouchableHighlight>
+                        </TouchableHighlight>}
+                        {isSubmitting && <TouchableHighlight 
+                            style={styles.button}
+                            onPress={handleSubmit}
+                            disabled={true}
+                        >
+                            <ActivityIndicator size='large' color='#fff'/>
+                        </TouchableHighlight>}
+
                     </View>
                 )}
             </Formik>
@@ -206,9 +192,9 @@ const styles = StyleSheet.create({
         paddingLeft: 20
     },
     erroFormulario:{
-        
         color: 'red',
         fontSize: 14,
-        paddingTop: "5%"
+        paddingTop: "5%",
+        position:'relative'
     }
 });

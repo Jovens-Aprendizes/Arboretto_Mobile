@@ -2,42 +2,71 @@ import * as React from 'react';
 import { StyleSheet, Text, View, SafeAreaView, TouchableHighlight, TextInput } from 'react-native';
 import Calendar from 'react-native-calendars/src/calendar';
 import { useNavigation } from '@react-navigation/native';
-import {useState} from 'react';
+import { useState, useEffect } from 'react';
 import 'react-native-calendars/src/types'
+import axios from 'axios';
+import { listUnavailableDates } from '../../services/api';
+import { format } from 'date-fns';
 
 export default function SelectDate({route}) {
-    
+
     const navigation = useNavigation();
+    const [unavailableDates, setUnavailableDates] = useState([]);
+    const [selectedDate, setSelectedDate] = useState(null);
+    const dataAtual = new Date();
+
+    let spaceId = "";
+    if (route.params.paramKey == 'CHURRASQUEIRA 1'){
+        spaceId = "1";
+      } else if (route.params.paramKey == 'CHURRASQUEIRA 2'){
+        spaceId = "2";
+      } else if (route.params.paramKey == 'SALÃO DE FESTAS'){
+        spaceId = "3";
+    };
+
+    
+    
+    useEffect(() => {
+        // Call the API function and update the state with the result
+        listUnavailableDates(spaceId)
+        .then(data => {
+            // Converte as datas para o formato esperado pelo markedDates
+            const formattedDates = {};
+            data.forEach(date => {
+                formattedDates[date] = { selected: true, marked: true, selectedColor: 'red' };
+            });
+            // Atualiza o estado com as datas indisponíveis formatadas
+            setUnavailableDates(formattedDates);
+        })
+        .catch(error => console.error(error));
+    }, []);
+
+
+   
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.calendarView}>
 
                 <Text style={styles.title}>{route.params.paramKey}</Text>
+
+               
                 <Calendar 
-                    
+                    onDayPress={(day) => setSelectedDate(day.dateString)}
+                    minDate={dataAtual}
                     style={styles.calendar}
                     markingType={'multi-dot'}
-                    markedDates={{
-                        '2023-09-12': { 
-                        selected: true, 
-                        selectedColor: 'lightgreen', 
-                        selectedTextColor: 'black'
-                    }, '2023-09-13': { 
-                        selected: true, 
-                        selectedColor: 'lightgreen', 
-                        selectedTextColor: 'black'
-                    },
-                    '2023-09-14': { 
-                        selected: true, 
-                        selectedColor: 'lightgreen', 
-                        selectedTextColor: 'black'
-                    }
-                    }}
-                    
+                    markedDates={unavailableDates}
+                    disableAllTouchEventsForInactiveDays={true}
                     
                 />
             </View>
-            
+
+            {
+            selectedDate && <Text style={styles.textSelectedDate}>
+                Data selecionada: {format(new Date(selectedDate), 'dd/MM/yyyy')}
+            </Text>
+            }
+
             <View style= {styles.inputView}>
                 <TextInput
                     style={styles.input}
@@ -120,6 +149,18 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         color: "#fff",
         textAlign: "left"
+    },
+    textSelectedDate: {
+        fontSize: 25,
+        marginBottom: 20,
+        backgroundColor: "#f4f7fb",
+        borderRadius: 15,
+        borderColor: "#ccc",
+        borderStyle: 'solid',
+        borderWidth: 1,
+        width: '80%',
+        paddingLeft: 20,
+
     }
     
 });

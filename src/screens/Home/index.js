@@ -1,10 +1,24 @@
 import * as React from 'react';
+import { useContext } from 'react';
 import { Text, TouchableHighlight, SafeAreaView, StyleSheet} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CredentialContext } from '../../services/CredentialsContext';
 
 export default function Home() {
   
+  const {setStoredCredentials, storedCredentials} = useContext(CredentialContext);
+  const { nome } = storedCredentials;
+  const ClearLogin = () => {
+    AsyncStorage
+    .removeItem('ArborettoCredentials')
+    .then(() => {
+        setStoredCredentials('')
+    })
+    .catch(error => console.log(error))
+  }
   const navigation = useNavigation();
+
   return(
     <SafeAreaView style={styles.container}>
 
@@ -22,6 +36,14 @@ export default function Home() {
             <Text style={styles.textButton}>STATUS DE SOLICITAÇÕES</Text>
         </TouchableHighlight>
         
+
+        <TouchableHighlight 
+        style={styles.button}
+        onPress={ ClearLogin }
+        >
+            <Text style={styles.textButton}>SAIR</Text>
+        </TouchableHighlight>
+
     </SafeAreaView>
   );
 }  
