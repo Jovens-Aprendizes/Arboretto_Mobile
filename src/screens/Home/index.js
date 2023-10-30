@@ -9,6 +9,7 @@ export default function Home() {
   
   const {setStoredCredentials, storedCredentials} = useContext(CredentialContext);
   const { nome } = storedCredentials;
+  
   const ClearLogin = () => {
     AsyncStorage
     .removeItem('ArborettoCredentials')
@@ -38,7 +39,7 @@ export default function Home() {
         
 
         <TouchableHighlight 
-        style={styles.button}
+        style={styles.buttonLogout}
         onPress={ ClearLogin }
         >
             <Text style={styles.textButton}>SAIR</Text>
@@ -61,6 +62,17 @@ const styles = StyleSheet.create({
     button:{
         borderRadius: 20,
         backgroundColor: "#1F97AE",
+        width: "75%",
+        height: "9%",
+        alignItems: 'center',
+        justifyContent: "center",
+        alignSelf: 'center',
+        top: '9%',
+        marginBottom: '8%'
+    },
+    buttonLogout:{
+        borderRadius: 20,
+        backgroundColor: "red",
         width: "75%",
         height: "9%",
         alignItems: 'center',

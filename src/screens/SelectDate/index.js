@@ -2,45 +2,71 @@ import * as React from 'react';
 import { StyleSheet, Text, View, SafeAreaView, TouchableHighlight, TextInput } from 'react-native';
 import Calendar from 'react-native-calendars/src/calendar';
 import { useNavigation } from '@react-navigation/native';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import 'react-native-calendars/src/types'
 import axios from 'axios';
 import { listUnavailableDates } from '../../services/api';
-import { format } from 'date-fns';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CredentialContext } from '../../services/CredentialsContext';
 
 export default function SelectDate({route}) {
-
+    const {setStoredCredentials, storedCredentials} = useContext(CredentialContext);
+    const { id } = storedCredentials;
     const navigation = useNavigation();
     const [unavailableDates, setUnavailableDates] = useState([]);
-    const [selectedDate, setSelectedDate] = useState(null);
+    const [observacao, setObservacao] = useState('');
+    const [selectedDate, setSelectedDate] = useState();
     const dataAtual = new Date();
-
+    dataAtual.setHours(0, 0, 0, 0);
     let spaceId = "";
-    if (route.params.paramKey == 'CHURRASQUEIRA 1'){
-        spaceId = "1";
-      } else if (route.params.paramKey == 'CHURRASQUEIRA 2'){
-        spaceId = "2";
-      } else if (route.params.paramKey == 'SALÃO DE FESTAS'){
-        spaceId = "3";
-    };
+    
+    
+    // FUNÇÃO PARA RESERVAR 
+    const reservar = () => {
+        const jsonData = {
+            "usuarioId": id,
+            "spaceId": spaceId,
+            "dataMarcada": selectedDate,
+            "observacao": observacao
+        };
+        JSON.stringify(jsonData)
 
+        // CHAMAR API PARA RESERVAR
+    }
     
     
     useEffect(() => {
-        // Call the API function and update the state with the result
+
+        if (route.params.paramKey == 'CHURRASQUEIRA 1'){
+            spaceId = "1";
+          } else if (route.params.paramKey == 'CHURRASQUEIRA 2'){
+            spaceId = "2";
+          } else if (route.params.paramKey == 'SALÃO DE FESTAS'){
+            spaceId = "3";
+        };
+        console.log('id do usuário: ', id)
+
         listUnavailableDates(spaceId)
         .then(data => {
-            // Converte as datas para o formato esperado pelo markedDates
+            
             const formattedDates = {};
             data.forEach(date => {
-                formattedDates[date] = { selected: true, marked: true, selectedColor: 'red' };
+                formattedDates[date] = { selected: true, marked: true, disableTouchEvent: true, selectedColor: 'red' };
             });
-            // Atualiza o estado com as datas indisponíveis formatadas
+            
             setUnavailableDates(formattedDates);
         })
         .catch(error => console.error(error));
     }, []);
 
+
+    // FUNÇÃO QUE FORMATA A DATA PARA VISUALIZAÇÃO DO USUÁRIO
+    const formataData = (dataString) => {
+        
+        const [ano, mes, dia] = dataString.split('-')
+        const dataFormatada = `${dia.padStart(2, '0')}/${mes.padStart(2, '0')}/${ano}`;
+        return dataFormatada;
+    }
 
    
     return (
@@ -56,26 +82,31 @@ export default function SelectDate({route}) {
                     style={styles.calendar}
                     markingType={'multi-dot'}
                     markedDates={unavailableDates}
-                    disableAllTouchEventsForInactiveDays={true}
-                    
                 />
             </View>
 
+            {/* TEXTO INFORMANDO A DATA SELECIONADA PELO USUÁRIO */}
             {
             selectedDate && <Text style={styles.textSelectedDate}>
-                Data selecionada: {format(new Date(selectedDate), 'dd/MM/yyyy')}
+                Data selecionada: {formataData(selectedDate)}
             </Text>
             }
 
+            {/* OBSERVAÇÃO DO USUÁRIO */}
             <View style= {styles.inputView}>
                 <TextInput
                     style={styles.input}
                     placeholder='Escreva uma observação'
+                    onChangeText={setObservacao}
+                    
                 />
             </View>
+
+            {/* BOTÃO RESERVAR */}
             <View style={styles.buttonView}>
                 <TouchableHighlight
                 style={styles.button}
+                // onPress={reservar}
                 >
                     <Text style={styles.textButton}>RESERVAR</Text>
                 </TouchableHighlight>
