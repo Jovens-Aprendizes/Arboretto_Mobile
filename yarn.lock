@@ -1232,6 +1232,11 @@
   resolved "https://registry.npmjs.org/@emotion/unitless/-/unitless-0.8.1.tgz"
   integrity sha512-KOEGMu6dmJZtpadb476IsZBclKvILjopjUii3V+7MnXIQCYh8W3NgNcgwo21n9LXZX6EDIKvqfjYxXebDwxKmQ==
 
+"@expo-google-fonts/inconsolata@^0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@expo-google-fonts/inconsolata/-/inconsolata-0.2.3.tgz#efc7d2f16ca5b9d6a63568a9dcf9af305ffc4b4a"
+  integrity sha512-saB2HZa4Amiofv+ESHRqtx9NnnB59GBAnI7ab8eCv9LcJfRZplOqtQ82i9PprbLRRgqt0krNYCgLEQljEm5m5A==
+
 "@expo/bunyan@4.0.0", "@expo/bunyan@^4.0.0":
   version "4.0.0"
   resolved "https://registry.npmjs.org/@expo/bunyan/-/bunyan-4.0.0.tgz"

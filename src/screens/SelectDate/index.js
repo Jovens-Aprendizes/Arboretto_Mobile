@@ -8,6 +8,7 @@ import axios from 'axios';
 import { listUnavailableDates } from '../../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CredentialContext } from '../../services/CredentialsContext';
+import { reserveSpace } from '../../services/api';
 
 export default function SelectDate({route}) {
     const {setStoredCredentials, storedCredentials} = useContext(CredentialContext);
@@ -17,49 +18,62 @@ export default function SelectDate({route}) {
     const [observacao, setObservacao] = useState('');
     const [selectedDate, setSelectedDate] = useState();
     const dataAtual = new Date();
+    const spaceId = route.params.paramKey;
     dataAtual.setHours(0, 0, 0, 0);
-    let spaceId = "";
-    
-    
-    // FUNÇÃO PARA RESERVAR 
-    const reservar = () => {
-        const jsonData = {
-            "usuarioId": id,
-            "spaceId": spaceId,
-            "dataMarcada": selectedDate,
-            "observacao": observacao
-        };
-        JSON.stringify(jsonData)
-
-        // CHAMAR API PARA RESERVAR
+    let espacoAtual = '';
+    if (route.params.paramKey == '1'){
+        espacoAtual = 'CHURRASQUEIRA 1'
+    } else if (route.params.paramKey == '2') {
+        espacoAtual = 'CHURRASQUEIRA 2'
+    } else if (route.params.paramKey == '3'){
+        espacoAtual = 'SALÃO DE FESTAS'
     }
-    
     
     useEffect(() => {
 
-        if (route.params.paramKey == 'CHURRASQUEIRA 1'){
-            spaceId = "1";
-          } else if (route.params.paramKey == 'CHURRASQUEIRA 2'){
-            spaceId = "2";
-          } else if (route.params.paramKey == 'SALÃO DE FESTAS'){
-            spaceId = "3";
-        };
-        console.log('id do usuário: ', id)
-
+        console.log("Space ID atual: ", spaceId);
+        
         listUnavailableDates(spaceId)
-        .then(data => {
-            
-            const formattedDates = {};
-            data.forEach(date => {
-                formattedDates[date] = { selected: true, marked: true, disableTouchEvent: true, selectedColor: 'red' };
-            });
-            
-            setUnavailableDates(formattedDates);
-        })
-        .catch(error => console.error(error));
-    }, []);
+            .then(data => {
+                const formattedDates = {};
+                data.forEach(date => {
+                    formattedDates[date] = { selected: true, marked: true, disableTouchEvent: true, selectedColor: 'red' };
+                });
+                setUnavailableDates(formattedDates);
+            })
+            .catch(error => console.error(error));
+        
+    }, [route.params.paramKey]);
 
+    // FUNÇÃO PARA RESERVAR 
+    const reservar = () => {
+        
+        const selectedDateFormatted = selectedDate.split("-").join("/"); 
 
+        const jsonData = {
+            "usuarioId":id.toString(),
+            "spaceId":spaceId.toString(), 
+            "dataMarcada":selectedDateFormatted,
+            "observacao":observacao
+        };
+        JSON.stringify(jsonData)
+        console.log(jsonData)
+
+        try {
+    
+            response = reserveSpace(jsonData);
+            if (response) {
+                navigation.navigate('SucessReserve');
+            }
+
+            // Navegue ou mostre uma mensagem de sucesso ao usuário
+        } catch (error) {
+            // Manipule o erro aqui
+            console.error(error);
+        }
+    }
+    
+    
     // FUNÇÃO QUE FORMATA A DATA PARA VISUALIZAÇÃO DO USUÁRIO
     const formataData = (dataString) => {
         
@@ -73,7 +87,7 @@ export default function SelectDate({route}) {
         <SafeAreaView style={styles.container}>
             <View style={styles.calendarView}>
 
-                <Text style={styles.title}>{route.params.paramKey}</Text>
+                <Text style={styles.title}>{espacoAtual}</Text>
 
                
                 <Calendar 
@@ -84,37 +98,40 @@ export default function SelectDate({route}) {
                     markedDates={unavailableDates}
                 />
             </View>
+            
+                {/* TEXTO INFORMANDO A DATA SELECIONADA PELO USUÁRIO */}
+                {
+                selectedDate && <Text style={styles.textSelectedDate}>
+                    Data selecionada: {formataData(selectedDate)}
+                </Text>
+                }
 
-            {/* TEXTO INFORMANDO A DATA SELECIONADA PELO USUÁRIO */}
-            {
-            selectedDate && <Text style={styles.textSelectedDate}>
-                Data selecionada: {formataData(selectedDate)}
-            </Text>
-            }
+                {/* OBSERVAÇÃO DO USUÁRIO */}
+                <View style= {styles.inputView}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder='Escreva uma observação'
+                        onChangeText={setObservacao}
+                        
+                    />
+                </View>
 
-            {/* OBSERVAÇÃO DO USUÁRIO */}
-            <View style= {styles.inputView}>
-                <TextInput
-                    style={styles.input}
-                    placeholder='Escreva uma observação'
-                    onChangeText={setObservacao}
-                    
-                />
-            </View>
-
-            {/* BOTÃO RESERVAR */}
-            <View style={styles.buttonView}>
-                <TouchableHighlight
-                style={styles.button}
-                // onPress={reservar}
-                >
-                    <Text style={styles.textButton}>RESERVAR</Text>
-                </TouchableHighlight>
+                {/* BOTÃO RESERVAR */}
+                <View style={styles.buttonView}>
+                    <TouchableHighlight
+                    style={styles.button}
+                    onPress={reservar}
+                    >
+                        <Text style={styles.textButton}>RESERVAR</Text>
+                    </TouchableHighlight>
                 </View>
                 
         </SafeAreaView>
     );
-}
+};
+
+
+
 
 const styles = StyleSheet.create({
     container: {

@@ -17,7 +17,7 @@ export default function SelectSpace() {
                 </View>
                 <TouchableHighlight 
                 style={styles.button}
-                onPress={ () => navigation.navigate('SelectDate', {paramKey: 'CHURRASQUEIRA 1'})}
+                onPress={ () => navigation.navigate('SelectDate', {paramKey: '1'})}
                 >
                     <Text style={styles.textButton}>CHURRASQUEIRA 1</Text>
                 </TouchableHighlight>
@@ -31,7 +31,7 @@ export default function SelectSpace() {
                 </View>
                 <TouchableHighlight 
                 style={styles.button}
-                onPress={ () => navigation.navigate('SelectDate', {paramKey: 'CHURRASQUEIRA 2'})}
+                onPress={ () => navigation.navigate('SelectDate', {paramKey: '2'})}
                 >   
                     <Text style={styles.textButton}>CHURRASQUEIRA 2</Text>
                 </TouchableHighlight>
@@ -45,7 +45,7 @@ export default function SelectSpace() {
                 </View>
                 <TouchableHighlight 
                 style={styles.button}
-                onPress={ () => navigation.navigate('SelectDate', {paramKey: 'SALÃO DE FESTAS'})}
+                onPress={ () => navigation.navigate('SelectDate', {paramKey: '3'})}
                 >   
                     <Text style={styles.textButton}>SALÃO DE FESTAS</Text>
                 </TouchableHighlight>

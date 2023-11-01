@@ -1,40 +1,29 @@
 import { encode } from 'base-64';
 import axios from 'axios';
 import { Alert } from 'react-native';
-import { setCookie } from 'nookies';
 
-// REQUISIÇÃO DE DADAS MARCADAS PARA UM ESPAÇO
+const listResquests = async ( idUsuario ) => {
+  let solicitacoes = [];
+  const url = "https://api-arboretto-production.up.railway.app/api-arboretto-dev/v1/usuario-space/listar-por-usuario-id?usuarioId=" + idUsuario;
+  const response = await axios.get(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: '*/*',
+    },
+  })
+  .catch((error) => console.log(error))
 
-const listUnavailableDates = async ( spaceId ) => {
-
-  let datasMarcadas = [];
-  try {
-    const url = "https://api-arboretto-production.up.railway.app/api-arboretto-dev/v1/usuario-space/listar-por-space-id?spaceId=" + spaceId;
-    const response = await axios.get(url)
-    .catch((error) => console.log(error))
-
-    if(response.data){
-      datasMarcadas = response.data.map(jsonObj => jsonObj["dataMarcada"]);
-
-      datasMarcadas = datasMarcadas.map(dataComHorario => {
-        const partes = dataComHorario.split(' ');
-        
-        return partes[0];
-      });
-
-      console.log(datasMarcadas)
-    }
+  if(response.status == 200){
     
-  } catch (error) {
-    console.log(error)
-    Alert.alert('Erro', 'Ocorreu um erro ao reservar a data. Tente novamente!');
+    return response.data;
+  } else {
+    throw new Error('Erro ao obter os dados das solicitações');
   }
-  return datasMarcadas
+  
+
 
 };
-
-export {listUnavailableDates}; 
-
+export {listResquests}
 
 // LOGIN DO USUÁRIO
 const signIn = async ({ cpf, senha, setSubmitting, persistLogin }) => {
@@ -70,3 +59,60 @@ const signIn = async ({ cpf, senha, setSubmitting, persistLogin }) => {
 };
 
 export { signIn }; 
+
+
+// REQUISIÇÃO DE DADAS MARCADAS PARA UM ESPAÇO
+const listUnavailableDates = async ( spaceId ) => {
+
+  let datasMarcadas = [];
+  try {
+    const url = "https://api-arboretto-production.up.railway.app/api-arboretto-dev/v1/usuario-space/listar-por-space-id?spaceId=" + spaceId;
+    const response = await axios.get(url)
+    .catch((error) => console.log(error))
+
+    if(response.status == 200){
+      datasMarcadas = response.data.map(jsonObj => jsonObj["dataMarcada"]);
+
+      datasMarcadas = datasMarcadas.map(dataComHorario => {
+        const partes = dataComHorario.split(' ');
+        
+        return partes[0];
+      });
+
+      console.log(datasMarcadas)
+    }
+    
+  } catch (error) {
+    console.log(error)
+    Alert.alert('Erro', 'Ocorreu um erro ao reservar a data. Tente novamente!');
+  }
+  return datasMarcadas
+
+};
+export {listUnavailableDates}; 
+
+
+
+export const reserveSpace = async (dadosReserva) => {
+  try {
+    const response = await axios.post(
+      process.env.NEXT_PUBLIC_AUTH_URL || 'https://api-arboretto-production.up.railway.app/api-arboretto-dev/v1/usuario-space/salvar',
+      dadosReserva,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: '*/*',
+        },
+      }
+    );
+    return response.data;
+
+  } catch (erro) {
+    console.log(erro)
+    Alert.alert('Erro', 'Falha ao solicitar reserva!');
+  }
+};
+
+
+
+

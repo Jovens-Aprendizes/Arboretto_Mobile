@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { useContext } from 'react';
+import { loadFonts } from '../../services/fonts';
+import { useContext, useEffect, useState } from 'react';
 import { Text, TextInput, TouchableHighlight, View, SafeAreaView, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Formik } from 'formik';
@@ -13,7 +14,7 @@ export default function Login() {
   
   const navigation = useNavigation();
   const {storedCredentials, setStoredCredentials} = useContext(CredentialContext);
-
+  const [fontsLoaded, setFontsLoaded] = useState(false);
 
   const persistLogin = (credentials, message, status) => {
     AsyncStorage.setItem('ArborettoCredentials', JSON.stringify(credentials))
@@ -26,12 +27,22 @@ export default function Login() {
     })
   }
   
+  useEffect(() => {
+    async function loadAppResources() {
+      await loadFonts(); // Carregue as fontes usando a função de carregamento
+      setFontsLoaded(true);
+    }
 
+    loadAppResources();
+  }, []);
+
+  if (!fontsLoaded) {
+    return <View />; // Ou outro componente de carregamento, se desejado
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-        <Text style={styles.arboretto}>ARBORETTO</Text>
-        <Image style={[styles.logoImage]} resizeMode='contain' source={require('../../img/logo.png')}/>
+        <Image style={[styles.logoImage]} resizeMode='contain' source={require('../../img/logoArborettoPlusText.png')}/>
         <View style={styles.fieldLogin}>
     
     
@@ -118,33 +129,30 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
     logoImage: {
-        height: "15%",
-        width: "35%",
-        top: "3.33%",
-        right: "66.11%",
-        bottom: "87.5%",
-        maxHeight: "100%",
-        maxWidth: "100%",
-        left: "0%",
-        position: "absolute",
-        overflow: "hidden"
+        flex: 0.2,
+        height: '80%',
+        width: '80%',
+        overflow: "hidden",
+        alignSelf: 'center',
+        
     },
     
-    arboretto: {
-        top: "6.67%",
-        fontSize: 35,
-        fontWeight: "bold",
-        color: "#0b1f33",
-        textAlign: "center",
-        left: "0%",
-        position: "absolute",
-        width: "100%"
-    },    
+    // arboretto: {
+    //     top: "6.67%",
+    //     fontSize: 35,
+    //     fontFamily:'Lora-Medium',
+    //     color: "#0b1f33",
+    //     textAlign: "center",
+    //     textAlignVertical: 'center',
+    //     left: "0%",
+    //     position: "absolute",
+    //     width: "100%",
+    //     paddingTop: 10
+    // },    
     fieldLogin: {
-        top: "18%",
         paddingStart: "5%",
         paddingEnd: "5%",
-        flex: 1,
+        flex: 0.8,
     },
     title: {
         fontSize: 24,

@@ -22,7 +22,7 @@ export default function Home() {
 
   return(
     <SafeAreaView style={styles.container}>
-
+        <Text style={styles.textBemVindo}>Seja bem-vindo, {nome}!</Text>
         <TouchableHighlight 
         style={styles.button}
         onPress={ () => navigation.navigate('SelectSpace')}
@@ -44,14 +44,15 @@ export default function Home() {
         >
             <Text style={styles.textButton}>SAIR</Text>
         </TouchableHighlight>
-
+        
     </SafeAreaView>
   );
 }  
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff'
+        backgroundColor: '#fff',
+        alignItems: "center",
     },
     textButton: {
         fontSize: 26,
@@ -80,5 +81,16 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         top: '9%',
         marginBottom: '8%'
-    }
+    },
+    textBemVindo: {
+        flex: 0.1,
+        fontSize: 40,
+        fontWeight: "700",
+        color: "black",
+        textAlign: 'center',
+        height: "120%",
+        textAlignVertical: "center",
+        paddingTop:'10%'
+    },
+    
 });

@@ -7,6 +7,7 @@ import SelectDate from "../screens/SelectDate";
 import Home from "../screens/Home";
 import Requests from "../screens/Requests";
 import { CredentialContext } from "../services/CredentialsContext";
+import SucessReserve from "../screens/SucessReserve";
 
 
 
@@ -39,7 +40,11 @@ export default function Routes() {
                                 component={SelectSpace}
                                 options={{ headerTitle: 'SELECIONE O ESPAÇO' }}
                                 />
-                            
+                            <Stack.Screen
+                                name="SucessReserve"
+                                component={SucessReserve}
+                                options={{ headerShown: false}}
+                                />
                             <Stack.Screen
                                 name="SelectDate"
                                 component={SelectDate}
