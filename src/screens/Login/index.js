@@ -8,6 +8,7 @@ import { Alert } from 'react-native';
 import { signIn } from '../../services/api';
 import { CredentialContext } from '../../services/CredentialsContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { RFValue } from 'react-native-responsive-fontsize';
 
 
 export default function Login() {
@@ -29,7 +30,7 @@ export default function Login() {
   
   useEffect(() => {
     async function loadAppResources() {
-      await loadFonts(); // Carregue as fontes usando a função de carregamento
+      await loadFonts(); 
       setFontsLoaded(true);
     }
 
@@ -37,7 +38,7 @@ export default function Login() {
   }, []);
 
   if (!fontsLoaded) {
-    return <View />; // Ou outro componente de carregamento, se desejado
+    return <View />;
   }
 
   return (
@@ -155,7 +156,7 @@ const styles = StyleSheet.create({
         flex: 0.8,
     },
     title: {
-        fontSize: 24,
+        fontSize: RFValue(24),
         textAlign: "left",
         color: "#66727f",
         top: "8%"
@@ -174,7 +175,7 @@ const styles = StyleSheet.create({
         marginTop: "20%"
     },
     textButton: {
-        fontSize: 26,
+        fontSize: RFValue(26),
         fontWeight: "700",
         color: "#fff",
         textAlign: "left"
@@ -184,7 +185,7 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         width: "100%",
         paddingVertical: 15,
-        fontSize: 24,
+        fontSize: RFValue(24),
         top: "10%",
         marginBottom: "8%",
         paddingLeft: 20,
@@ -194,14 +195,14 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         width: "100%",
         paddingVertical: 15,
-        fontSize: 24,
+        fontSize: RFValue(24),
         top: "10%",
         marginBottom: "8%",
         paddingLeft: 20
     },
     erroFormulario:{
         color: 'red',
-        fontSize: 14,
+        fontSize: RFValue(14),
         paddingTop: "5%",
         position:'relative'
     }

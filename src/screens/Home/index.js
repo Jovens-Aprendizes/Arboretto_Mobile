@@ -1,15 +1,18 @@
 import * as React from 'react';
-import { useContext } from 'react';
-import { Text, TouchableHighlight, SafeAreaView, StyleSheet} from 'react-native';
+import { useContext, useState, useEffect } from 'react';
+import { Text, TouchableHighlight, SafeAreaView, StyleSheet, View, Image} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CredentialContext } from '../../services/CredentialsContext';
+import { loadFonts } from '../../services/fonts';
+import { RFValue } from 'react-native-responsive-fontsize';
 
 export default function Home() {
   
   const {setStoredCredentials, storedCredentials} = useContext(CredentialContext);
   const { nome } = storedCredentials;
-  
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
   const ClearLogin = () => {
     AsyncStorage
     .removeItem('ArborettoCredentials')
@@ -19,6 +22,19 @@ export default function Home() {
     .catch(error => console.log(error))
   }
   const navigation = useNavigation();
+
+  useEffect(() => {
+    async function loadAppResources() {
+      await loadFonts(); 
+      setFontsLoaded(true);
+    }
+
+    loadAppResources();
+  }, []);
+
+  if (!fontsLoaded) {
+    return <View />;
+  }
 
   return(
     <SafeAreaView style={styles.container}>
@@ -38,13 +54,16 @@ export default function Home() {
         </TouchableHighlight>
         
 
+        <Image style={[styles.logoImage]} resizeMode='contain' source={require('../../img/logo.png')}/>
+
+
         <TouchableHighlight 
         style={styles.buttonLogout}
         onPress={ ClearLogin }
         >
             <Text style={styles.textButton}>SAIR</Text>
         </TouchableHighlight>
-        
+       
     </SafeAreaView>
   );
 }  
@@ -55,12 +74,14 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     textButton: {
-        fontSize: 26,
-        fontWeight: "700",
+        fontSize: RFValue(20),
+        fontFamily:'Lora-Medium',
         color: "#fff",
-        textAlign: "left"
+        textAlign: "left",
+        
     },
     button:{
+        flex: 0.16,
         borderRadius: 20,
         backgroundColor: "#1F97AE",
         width: "75%",
@@ -68,29 +89,33 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: "center",
         alignSelf: 'center',
-        top: '9%',
-        marginBottom: '8%'
+        marginBottom: '8%',
+        
     },
     buttonLogout:{
+        flex: 0.09,
         borderRadius: 20,
         backgroundColor: "red",
         width: "75%",
-        height: "9%",
+        height: "100%",
         alignItems: 'center',
-        justifyContent: "center",
+        justifyContent: 'center',
         alignSelf: 'center',
-        top: '9%',
-        marginBottom: '8%'
+        marginBottom: "10%"
     },
     textBemVindo: {
-        flex: 0.1,
-        fontSize: 40,
-        fontWeight: "700",
+        flex: 0.2,
+        fontSize: RFValue(40),
+        fontFamily:'Lora-Medium',
         color: "black",
         textAlign: 'center',
         height: "120%",
         textAlignVertical: "center",
-        paddingTop:'10%'
+        padding:'6%',
     },
-    
+    logoImage: {
+        flex: 0.5,
+        width: "200%",
+
+    }
 });

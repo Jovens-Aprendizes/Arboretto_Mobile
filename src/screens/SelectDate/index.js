@@ -1,16 +1,18 @@
 import * as React from 'react';
-import { StyleSheet, Text, View, SafeAreaView, TouchableHighlight, TextInput } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, TouchableHighlight, TextInput, ActivityIndicator } from 'react-native';
 import Calendar from 'react-native-calendars/src/calendar';
 import { useNavigation } from '@react-navigation/native';
 import { useState, useEffect, useContext } from 'react';
 import 'react-native-calendars/src/types'
-import axios from 'axios';
 import { listUnavailableDates } from '../../services/api';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CredentialContext } from '../../services/CredentialsContext';
 import { reserveSpace } from '../../services/api';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { loadFonts } from '../../services/fonts';
 
 export default function SelectDate({route}) {
+    const [isLoading, setIsLoading] = useState(true);
+    const [unavailableDateMessage, setUnavailableDateMessage] = useState('');
     const {setStoredCredentials, storedCredentials} = useContext(CredentialContext);
     const { id } = storedCredentials;
     const navigation = useNavigation();
@@ -20,6 +22,8 @@ export default function SelectDate({route}) {
     const dataAtual = new Date();
     const spaceId = route.params.paramKey;
     dataAtual.setHours(0, 0, 0, 0);
+    const [fontsLoaded, setFontsLoaded] = useState(false);
+
     let espacoAtual = '';
     if (route.params.paramKey == '1'){
         espacoAtual = 'CHURRASQUEIRA 1'
@@ -37,14 +41,26 @@ export default function SelectDate({route}) {
             .then(data => {
                 const formattedDates = {};
                 data.forEach(date => {
-                    formattedDates[date] = { selected: true, marked: true, disableTouchEvent: true, selectedColor: 'red' };
+                    formattedDates[date] = { selected: true, marked: true, selectedColor: 'red' };
                 });
                 setUnavailableDates(formattedDates);
+                setIsLoading(false);
             })
             .catch(error => console.error(error));
         
     }, [route.params.paramKey]);
-
+    
+    useEffect(() => {
+        async function loadAppResources() {
+          await loadFonts(); 
+          setFontsLoaded(true);
+        }
+    
+        loadAppResources();
+      }, []);
+    
+      
+    
     // FUNÇÃO PARA RESERVAR 
     const reservar = () => {
         
@@ -82,49 +98,73 @@ export default function SelectDate({route}) {
         return dataFormatada;
     }
 
-   
+    
+
+    if (isLoading) {
+        return (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#007bff" />
+          </View>
+        );
+    }
+
     return (
         <SafeAreaView style={styles.container}>
+            <Text style={styles.title}>{espacoAtual}</Text>
+
             <View style={styles.calendarView}>
 
-                <Text style={styles.title}>{espacoAtual}</Text>
-
-               
-                <Calendar 
-                    onDayPress={(day) => setSelectedDate(day.dateString)}
-                    minDate={dataAtual}
-                    style={styles.calendar}
-                    markingType={'multi-dot'}
-                    markedDates={unavailableDates}
-                />
+            <Calendar 
+            onDayPress={(day) => {
+                if (unavailableDates[day.dateString]) {
+                    setUnavailableDateMessage('Data indisponível para reserva');
+                    setSelectedDate(null)
+                } else {
+                    setUnavailableDateMessage('');
+                    setSelectedDate(day.dateString);
+                }
+            }}
+            minDate={dataAtual}
+            style={styles.calendar}
+            markingType={'multi-dot'}
+            markedDates={unavailableDates}
+            />
             </View>
             
-                {/* TEXTO INFORMANDO A DATA SELECIONADA PELO USUÁRIO */}
-                {
-                selectedDate && <Text style={styles.textSelectedDate}>
+            {/* TEXTO INFORMANDO A DATA SELECIONADA PELO USUÁRIO */}
+            {
+            selectedDate !== undefined && selectedDate !== null && (
+                <Text style={styles.textSelectedDate}>
                     Data selecionada: {formataData(selectedDate)}
                 </Text>
-                }
+            )}
+            
 
-                {/* OBSERVAÇÃO DO USUÁRIO */}
-                <View style= {styles.inputView}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder='Escreva uma observação'
-                        onChangeText={setObservacao}
-                        
-                    />
-                </View>
+            {
+            unavailableDateMessage !== '' && <Text style={styles.textUnavailableDate}>
+                {unavailableDateMessage}
+            </Text>
+            }
 
-                {/* BOTÃO RESERVAR */}
-                <View style={styles.buttonView}>
-                    <TouchableHighlight
-                    style={styles.button}
-                    onPress={reservar}
-                    >
-                        <Text style={styles.textButton}>RESERVAR</Text>
-                    </TouchableHighlight>
-                </View>
+            {/* OBSERVAÇÃO DO USUÁRIO */}
+            <View style= {styles.inputView}>
+                <TextInput
+                    style={styles.input}
+                    placeholder='Escreva uma observação'
+                    onChangeText={setObservacao}
+                    
+                />
+            </View>
+
+            {/* BOTÃO RESERVAR */}
+            <View style={styles.buttonView}>
+                <TouchableHighlight
+                style={styles.button}
+                onPress={reservar}
+                >
+                    <Text style={styles.textButton}>RESERVAR</Text>
+                </TouchableHighlight>
+            </View>
                 
         </SafeAreaView>
     );
@@ -138,68 +178,73 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'space-between'
     },
     title: {
-        top: "6.67%",
-        fontSize: 24,
-        fontWeight: "bold",
+        flex: 0.07,
+        fontSize: RFValue(20),
+        fontFamily:'Lora-Medium',
         color: "#0b1f33",
         textAlign: "center",
-        left: "0%",
-        position: "absolute",
-        width: "100%"
+        width: "100%",
+        textAlignVertical: 'center',
     },
     calendar: {
-        top: "3%",
         borderRadius: 15,
-        margin: "10%",
-        height: "75%",
-        elevation: 4
+        elevation: 4,
     },
     calendarView: {
-        flex: 0.6,
-        width: "100%",
+        flex: 0.45,
+        width: "80%",
+        height: "100%",
     },
     inputView: {
-        flex: 0.4,
-        width: '80%',
+        flex: 0.25,
+        width: '100%',
+        height: "100%",
     },
     input: {
-        backgroundColor: "#f4f7fb",
         borderRadius: 15,
         borderColor: "#ccc",
         borderStyle: 'solid',
         borderWidth: 1,
-        flex: 1,
-        fontSize: 24,
+        fontSize: RFValue(20),
+        fontFamily:'Lora-Medium',
         paddingLeft: 20,
         textAlignVertical: 'top',
-        paddingTop: 20
+        paddingTop: 10,
+        width: "80%",
+        height: "100%",
+        alignSelf: 'center',
+        backgroundColor: "#f4f7fb",
+    
     },
     buttonView: {
-        flex: 0.3,
-        width: "100%"
-    },
-    button: {
-        position: 'absolute',
-        backgroundColor: "#46e98f",
-        width: "65%",
-        height: "30%",
+        flex: 0.1,
+        width: "100%",
         alignSelf: "center",
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    button: {
+        backgroundColor: "#46e98f",
+        width: "65%",
+        height: "70%",
         borderRadius: 20,
-        top: "35%"
+        alignSelf: "center",
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     textButton: {
-        fontSize: 26,
-        fontWeight: "700",
+        fontSize: RFValue(22),
+        fontFamily:'Lora-Medium',
         color: "#fff",
         textAlign: "left"
     },
     textSelectedDate: {
-        fontSize: 25,
+        flex: 0.05,
+        fontFamily:'Lora-Medium',
+        fontSize: RFValue(20),
         marginBottom: 20,
         backgroundColor: "#f4f7fb",
         borderRadius: 15,
@@ -207,8 +252,29 @@ const styles = StyleSheet.create({
         borderStyle: 'solid',
         borderWidth: 1,
         width: '80%',
+        marginTop: "18%",
         paddingLeft: 20,
 
-    }
+    },
+    textUnavailableDate: {
+        flex: 0.05,
+        fontFamily:'Lora-Medium',
+        fontSize: RFValue(20),
+        marginBottom: 20,
+        backgroundColor: "#f4f7fb",
+        borderRadius: 15,
+        borderColor: "#ccc",
+        borderStyle: 'solid',
+        borderWidth: 1,
+        width: '80%',
+        marginTop: "18%",
+        paddingLeft: 20,
+        color: 'red',
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     
 });

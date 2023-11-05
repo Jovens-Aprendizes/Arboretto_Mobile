@@ -1,14 +1,18 @@
 import * as React from 'react';
-import { Text, View, SafeAreaView, StyleSheet, FlatList, Image } from 'react-native';
+import { Text, View, SafeAreaView, StyleSheet, FlatList, Image, ActivityIndicator } from 'react-native';
 import { useContext, useState, useEffect } from 'react';
 import { CredentialContext } from '../../services/CredentialsContext';
 import { listResquests } from '../../services/api';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { loadFonts } from '../../services/fonts';
 
 export default function Requests() {
+  
+  const [isLoading, setIsLoading] = useState(true);
   const { setStoredCredentials, storedCredentials } = useContext(CredentialContext);
   const { id } = storedCredentials;
   const [requests, setRequests] = useState([]);
-
+  const [fontsLoaded, setFontsLoaded] = useState(false);
   const formataData = (dataString) => {
 
     dataString = dataString.split(" ")[0];
@@ -19,11 +23,11 @@ export default function Requests() {
   }
 
   useEffect(() => {
-    // Chame a função listResquests com o ID para obter os dados das solicitações
     const fetchData = async () => {
       try {
         const data = await listResquests(storedCredentials.id);
         setRequests(data);
+        setIsLoading(false);
       } catch (error) {
         console.error('Erro ao buscar dados da API:', error);
       }
@@ -31,7 +35,26 @@ export default function Requests() {
 
     fetchData();
   }, [id]);
-      
+
+  useEffect(() => {
+    async function loadAppResources() {
+      await loadFonts(); 
+      setFontsLoaded(true);
+    }
+
+    loadAppResources();
+  }, []);
+  if (!fontsLoaded) {
+    return <View />;
+  }
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#007bff" />
+      </View>
+    );
+  }
+
   const renderRequestItem = ({ item }) => {
     let imagemSource;
   
@@ -97,9 +120,16 @@ const styles = StyleSheet.create({
       textAlign:"center",
       textAlignVertical:"center",
       flex: 0.3,
+      fontFamily:'Lora-Medium',
+      fontSize: RFValue(13)
       
     },
     calendarCheck: {
       flex: 0.1
-    }
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
 });

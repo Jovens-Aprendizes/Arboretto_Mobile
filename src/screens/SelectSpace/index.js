@@ -1,11 +1,25 @@
 import * as React from 'react';
 import { StyleSheet, Text, View, SafeAreaView, Image, TouchableHighlight } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import {useState} from 'react';
+import { useState, useEffect } from 'react';
+import { loadFonts } from '../../services/fonts';
+import { RFValue } from 'react-native-responsive-fontsize';
 
 export default function SelectSpace() {
-
+    const [fontsLoaded, setFontsLoaded] = useState(false);
     const navigation = useNavigation();
+    useEffect(() => {
+        async function loadAppResources() {
+          await loadFonts(); 
+          setFontsLoaded(true);
+        }
+    
+        loadAppResources();
+      }, []);
+    
+      if (!fontsLoaded) {
+        return <View />;
+      }
     return (
         <SafeAreaView style={styles.container}>
 
@@ -79,8 +93,8 @@ const styles = StyleSheet.create({
     },
     textButton: {
         marginLeft: 0,
-        fontSize: 24,
-        fontWeight: "300",
+        fontSize: RFValue(18),
+        fontFamily:'Lora-Medium',
         textAlign: 'left',
         color: '#0B1F33'
     },
